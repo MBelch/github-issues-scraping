@@ -12,7 +12,6 @@ def get_url_pages(main_url, n):
         pages_urls.append(main_url+'?page='+str(i)+'&q=is%3Aissue+is%3Aclosed')
     return(pages_urls)
 
-
 def get_pages_response(list_urls):
     responses = []
     for e in list_urls:
@@ -20,7 +19,6 @@ def get_pages_response(list_urls):
         if(r.status_code == 200):
             responses.append(r)
     return(responses)    
-
 
 def get_tags(pages_responses, tag, tag_class):
     tags = []
