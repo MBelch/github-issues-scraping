@@ -8,24 +8,24 @@ import matplotlib.pyplot as plt
 # defining functions which we'll use in the main program
 def get_url_pages(main_url, n):
 	pages_urls = []
-    for i in range(1,n):
-        pages_urls.append(main_url+'?page='+str(i)+'&q=is%3Aissue+is%3Aclosed')
-    return(pages_urls)
+	for i in range(1,n):
+		pages_urls.append(main_url+'?page='+str(i)+'&q=is%3Aissue+is%3Aclosed')
+		return(pages_urls)
 
 def get_pages_response(list_urls):
-    responses = []
-    for e in list_urls:
-        r = requests.get(e)
-        if(r.status_code == 200):
-            responses.append(r)
-    return(responses)    
+	responses = []
+	for e in list_urls:
+		r = requests.get(e)
+		if(r.status_code == 200):
+			responses.append(r)
+	return(responses)    
 
 def get_tags(pages_responses, tag, tag_class):
-    tags = []
-    for response in pages_responses:
-        doc = BeautifulSoup(response.text, 'html.parser')
-        tags += doc.find_all(tag, {'class': tag_class})
-    return tags
+	tags = []
+	for response in pages_responses:
+		doc = BeautifulSoup(response.text, 'html.parser')
+		tags += doc.find_all(tag, {'class': tag_class})
+		return tags
 
 
 #Main program:
@@ -70,10 +70,12 @@ if __name__ == "__main__":
 	df['date'] = pd.to_datetime(df['datetime']).dt.date
 	df['time'] = pd.to_datetime(df['datetime']).dt.time
 
+	#Ploting the data vizs
 	sns.set()
 	print("\n\n================================> Chart plotting <===============================")
 	print("\n\nFor a line chart of number of issues by date, press 1")
 	print("For a bar chart of top 5 authors, press 2")
+	print("For a bar chart of top 5 labels, press 3")
 	print("Press any to exit")
 	print("\n\n=================================================================================\n")
 	
