@@ -8,10 +8,18 @@ import numpy as np
 from IPython.display import display
 
 # defining functions which we'll use in the main program
-def get_url_pages(main_url, n):
+def get_url_pages(main_url, n, status):
 	pages_urls = []
-	for i in range(1,n):
-		pages_urls.append(main_url+'?page='+str(i)+'&q=is%3Aissue+is%3Aclosed')
+	if(status.lower() == "closed"):
+		for i in range(1,n):	
+			pages_urls.append(main_url+'?page='+str(i)+'&q=is%3Aissue+is%3Aclosed')
+		print("closed issues")
+
+	elif(status.lower() == "opened"):
+		for i in range(1,n):
+			pages_urls.append(main_url+'?page='+str(i)+'&q=is%3Aissue+is%3Aopen')
+		print("opened issues")	
+
 	return(pages_urls)
 
 def get_pages_response(list_urls):
@@ -37,7 +45,7 @@ def get_authors_issues(tags_list):
 
 def get_labels_issues(tags_list):
 	labels = []
-	for l in gt:
+	for l in tags_list:
 		try:
 			elt = str((l.find("a","IssueLabel hx_IssueLabel")).text)
 			elt = re.sub('\n',"",elt)
@@ -50,7 +58,7 @@ def get_labels_issues(tags_list):
 
 def get_time_issues(tags_list):
 	time = []
-	for t in gt:
+	for t in tags_list:
 		time.append((t.find("relative-time", "no-wrap")).get('datetime'))
 	return time
 
@@ -62,49 +70,74 @@ if __name__ == "__main__":
 	authors = []
 	labels = []
 	time = []
+	authors_opened = []
+	labels_opened = []
+	time_opened= []
 
 	#Using functions defined above
-	#Getting the first 26 pages of closed issues
-	pages_response = get_pages_response(get_url_pages('https://github.com/rails/rails/issues',25))
+	#Getting the first 26 pages of closed issues and for all the opened issues
+	pages_response = get_pages_response(get_url_pages('https://github.com/rails/rails/issues',25,"closed"))
 	gt = get_tags(pages_response,"div","flex-auto min-width-0 p-2 pr-3 pr-md-2")
+	pages_response_opened = get_pages_response(get_url_pages('https://github.com/rails/rails/issues',25,"opened"))
+	gt_opened = get_tags(pages_response_opened,"div","flex-auto min-width-0 p-2 pr-3 pr-md-2")
 
 	#Loading the list "authors" with the issues authors
 	authors = get_authors_issues(gt)
+	authors_opened = get_authors_issues(gt_opened)
+	print(len(authors_opened))
 
 	#Loading the list "labels" with the issues labels
 	labels = get_labels_issues(gt)
+	labels_opened = get_labels_issues(gt_opened)
+	print(len(labels_opened))
 
 	#Loading the list "time" with the datetime of each issue
 	time = get_time_issues(gt)
+	time_opened = get_time_issues(gt_opened)
+	print(len(time_opened))
 
-	#Generating a dataframe
+	#Generating a dataframe for the closed issues
 	dic = {"authors" : authors}
 	df = pd.DataFrame(data = dic)
 	df['labels'] = labels
 	df['datetime'] = time
 	df['datetime'] = df['datetime'].astype('datetime64[ns]')
 
-	#Spliting the datetime to a date part and time part
+	#Generating a dataframe for the opened issues
+	dic_opened = {"authors" : authors_opened}
+	df_opened = pd.DataFrame(data = dic_opened)
+	df_opened['labels'] = labels_opened
+	df_opened['datetime'] = time_opened
+	df_opened['datetime'] = df_opened['datetime'].astype('datetime64[ns]')	
+
+	#Spliting the datetime to a date part and time part for the closed issues
 	df['date'] = pd.to_datetime(df['datetime']).dt.date
 	df['time'] = pd.to_datetime(df['datetime']).dt.time
 	df['month'] = pd.to_datetime(df['datetime']).dt.month
 
+	#Spliting the datetime to a date part and time part for the opened issues
+	df_opened['date'] = pd.to_datetime(df_opened['datetime']).dt.date
+	df_opened['time'] = pd.to_datetime(df_opened['datetime']).dt.time
+	df_opened['year'] = pd.to_datetime(df_opened['datetime']).dt.year
+
 	#Number of issues scrapped
-	print("Number of issues scrapped : ", len(df))
+	print("\n\nNumber of closed issues scrapped : ", len(df))
+	print("Number of opened issues scrapped : ", len(df_opened))
 
 	#Ploting the data vizs
 	sns.set()
 	print("\n\n================================> Chart plotting <===============================")
-	print("\n\nFor a line chart of number of issues by date, press 1")
-	print("For a bar chart of top 5 authors, press 2")
-	print("For a bar chart of top 5 labels, press 3")
-	print("For a bar chart representing number of issues by months, press 4")
+	print("\n\nFor a line chart of number of the closed issues by date, press 1")
+	print("For a bar chart of top 5 authors of the closed issues, press 2")
+	print("For a bar chart of top 5 labels of the closed issues, press 3")
+	print("For a bar chart representing number of closed issues by months, press 4")
+	print("For a bar chart representing number of opened issues by years, press 5")
 	print("Press any to exit")
 	print("\n\n=================================================================================\n")
 	
 	i = 1
 	try:
-		while(i in (1,2,3,4)):
+		while(i in (1,2,3,4,5)):
 		
 			i = int(input("================> Type here and insert: "))
 			if(i == 1):
@@ -124,17 +157,17 @@ if __name__ == "__main__":
 			elif(i == 2): 
 				df_group_by_authors = df.groupby(by = 'authors').count()
 				df2 = df_group_by_authors.sort_values('datetime',ascending = False).head(5)
-				df2["datetime"].plot(kind = 'bar', color = 'r')
+				df2["datetime"].plot(kind = 'barh', color = 'r')
 				plt.title("Top 5 issues reporters")
-				plt.ylabel('Number of issues')
-				plt.xlabel('Authors')
+				plt.xlabel('Number of issues')
+				plt.ylabel('Authors')
 				plt.show()
 
 			elif(i == 3):
 				df_group_by_labels = df.groupby(by = 'labels').count()
 				df2 = df_group_by_labels.sort_values('datetime',ascending = False).head(5)
-				df2["datetime"].plot(kind = 'bar', color = 'g')
-				plt.ylabel('Number of issues')
+				df2["datetime"].plot(kind = 'barh', color = 'g')
+				plt.xlabel('Number of issues')
 				plt.show()
 
 			elif(i == 4):
@@ -142,6 +175,12 @@ if __name__ == "__main__":
 				df_group_by_months["datetime"].plot(kind = 'bar', color = 'y')
 				plt.ylabel('Number of issues')
 				plt.show()
+
+			elif(i == 5):
+				df_group_by_year = df_opened.groupby(by = 'year').count()
+				df_group_by_year["datetime"].plot(kind = 'bar', color = 'm')
+				plt.ylabel('Number of opened issues')
+				plt.show()				
 
 			else:
 				print("\n\nexiting!!")
