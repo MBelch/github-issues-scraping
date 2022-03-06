@@ -29,6 +29,31 @@ def get_tags(pages_responses, tag, tag_class):
 		tags += doc.find_all(tag, {'class': tag_class})
 	return tags
 
+def get_authors_issues(tags_list):
+	authors = []
+	for e in tags_list:
+		authors.append((e.find("a","Link--muted")).text)
+	return authors
+
+def get_labels_issues(tags_list):
+	labels = []
+	for l in gt:
+		try:
+			elt = str((l.find("a","IssueLabel hx_IssueLabel")).text)
+			elt = re.sub('\n',"",elt)
+			elt = elt.strip()
+			labels.append(elt)
+        
+		except AttributeError:
+			labels.append(None)
+	return labels
+
+def get_time_issues(tags_list):
+	time = []
+	for t in gt:
+		time.append((t.find("relative-time", "no-wrap")).get('datetime'))
+	return time
+
 
 #Main program:
 if __name__ == "__main__":
@@ -44,23 +69,13 @@ if __name__ == "__main__":
 	gt = get_tags(pages_response,"div","flex-auto min-width-0 p-2 pr-3 pr-md-2")
 
 	#Loading the list "authors" with the issues authors
-	for e in gt:
-		authors.append((e.find("a","Link--muted")).text)
+	authors = get_authors_issues(gt)
 
     #Loading the list "labels" with the issues labels
-	for l in gt:
-		try:
-			elt = str((l.find("a","IssueLabel hx_IssueLabel")).text)
-			elt = re.sub('\n',"",elt)
-			elt = elt.strip()
-			labels.append(elt)
-        
-		except AttributeError:
-			labels.append(None)
+	labels = get_labels_issues(gt)
 
     #Loading the list "time" with the datetime of each issue
-	for t in gt:
-		time.append((t.find("relative-time", "no-wrap")).get('datetime'))
+	time = get_time_issues(gt)
 
     #Generating a dataframe
 	dic = {"authors" : authors}
@@ -89,7 +104,7 @@ if __name__ == "__main__":
 	
 	i = 1
 	try:
-		while(i in (1,2,3)):
+		while(i in (1,2,3,4)):
 		
 			i = int(input("================> Type here and insert: "))
 			if(i == 1):
