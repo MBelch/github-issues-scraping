@@ -39,7 +39,8 @@ if __name__ == "__main__":
 	time = []
 
 	#Using functions defined above
-	pages_response = get_pages_response(get_url_pages('https://github.com/rails/rails/issues',26))
+	#Getting the first 26 pages of closed issues
+	pages_response = get_pages_response(get_url_pages('https://github.com/rails/rails/issues',25))
 	gt = get_tags(pages_response,"div","flex-auto min-width-0 p-2 pr-3 pr-md-2")
 
 	#Loading the list "authors" with the issues authors
@@ -71,6 +72,10 @@ if __name__ == "__main__":
 	#Spliting the datetime to a date part and time part
 	df['date'] = pd.to_datetime(df['datetime']).dt.date
 	df['time'] = pd.to_datetime(df['datetime']).dt.time
+	df['month'] = pd.to_datetime(df['datetime']).dt.month
+
+	#Number of issues scrapped
+	print("Number of issues scrapped : ", len(df))
 
 	#Ploting the data vizs
 	sns.set()
@@ -78,6 +83,7 @@ if __name__ == "__main__":
 	print("\n\nFor a line chart of number of issues by date, press 1")
 	print("For a bar chart of top 5 authors, press 2")
 	print("For a bar chart of top 5 labels, press 3")
+	print("For a bar chart representing number of issues by months, press 4")
 	print("Press any to exit")
 	print("\n\n=================================================================================\n")
 	
@@ -113,6 +119,13 @@ if __name__ == "__main__":
 				df_group_by_labels = df.groupby(by = 'labels').count()
 				df2 = df_group_by_labels.sort_values('datetime',ascending = False).head(5)
 				df2["datetime"].plot(kind = 'bar', color = 'g')
+				plt.ylabel('Number of issues')
+				plt.show()
+
+			elif(i == 4):
+				df_group_by_months = df.groupby(by = 'month').count()
+				df_group_by_months["datetime"].plot(kind = 'bar', color = 'y')
+				plt.ylabel('Number of issues')
 				plt.show()
 
 			else:
@@ -120,4 +133,3 @@ if __name__ == "__main__":
 
 	except ValueError:
 		print("\n\nexiting!!")
-		
