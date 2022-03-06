@@ -71,13 +71,13 @@ if __name__ == "__main__":
 	#Loading the list "authors" with the issues authors
 	authors = get_authors_issues(gt)
 
-    #Loading the list "labels" with the issues labels
+	#Loading the list "labels" with the issues labels
 	labels = get_labels_issues(gt)
 
-    #Loading the list "time" with the datetime of each issue
+	#Loading the list "time" with the datetime of each issue
 	time = get_time_issues(gt)
 
-    #Generating a dataframe
+	#Generating a dataframe
 	dic = {"authors" : authors}
 	df = pd.DataFrame(data = dic)
 	df['labels'] = labels
