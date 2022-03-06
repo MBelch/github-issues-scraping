@@ -13,12 +13,10 @@ def get_url_pages(main_url, n, status):
 	if(status.lower() == "closed"):
 		for i in range(1,n):	
 			pages_urls.append(main_url+'?page='+str(i)+'&q=is%3Aissue+is%3Aclosed')
-		print("closed issues")
 
 	elif(status.lower() == "opened"):
 		for i in range(1,n):
 			pages_urls.append(main_url+'?page='+str(i)+'&q=is%3Aissue+is%3Aopen')
-		print("opened issues")	
 
 	return(pages_urls)
 
@@ -84,17 +82,14 @@ if __name__ == "__main__":
 	#Loading the list "authors" with the issues authors
 	authors = get_authors_issues(gt)
 	authors_opened = get_authors_issues(gt_opened)
-	print(len(authors_opened))
 
 	#Loading the list "labels" with the issues labels
 	labels = get_labels_issues(gt)
 	labels_opened = get_labels_issues(gt_opened)
-	print(len(labels_opened))
 
 	#Loading the list "time" with the datetime of each issue
 	time = get_time_issues(gt)
 	time_opened = get_time_issues(gt_opened)
-	print(len(time_opened))
 
 	#Generating a dataframe for the closed issues
 	dic = {"authors" : authors}
