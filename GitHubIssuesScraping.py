@@ -4,13 +4,15 @@ import re
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+import numpy as np
+from IPython.display import display
 
 # defining functions which we'll use in the main program
 def get_url_pages(main_url, n):
 	pages_urls = []
 	for i in range(1,n):
 		pages_urls.append(main_url+'?page='+str(i)+'&q=is%3Aissue+is%3Aclosed')
-		return(pages_urls)
+	return(pages_urls)
 
 def get_pages_response(list_urls):
 	responses = []
@@ -25,7 +27,7 @@ def get_tags(pages_responses, tag, tag_class):
 	for response in pages_responses:
 		doc = BeautifulSoup(response.text, 'html.parser')
 		tags += doc.find_all(tag, {'class': tag_class})
-		return tags
+	return tags
 
 
 #Main program:
@@ -86,11 +88,16 @@ if __name__ == "__main__":
 			i = int(input("================> Type here and insert: "))
 			if(i == 1):
 				df_groupby_date = df.groupby(by = 'date').count()
+				x = df['date'].drop_duplicates()
+				y_mean = [np.mean(df_groupby_date["authors"])]*len(x)
 				y = df_groupby_date["authors"]
-				y.plot(kind = 'line')
-				plt.title('Number of issues per day')
-				plt.ylabel('Number of issues')
-				plt.xlabel('Date')
+				print("Statistics about the number of authors")
+				print(y.describe())
+				print("\n\n")
+				fig,ax = plt.subplots()
+				ax.plot(y, label='Number of issues', marker='o')
+				ax.plot(x,y_mean, label='Mean', linestyle='--')
+				ax.legend(loc='upper right')
 				plt.show()
 
 			elif(i == 2): 
@@ -113,5 +120,4 @@ if __name__ == "__main__":
 
 	except ValueError:
 		print("\n\nexiting!!")
-
-
+		
